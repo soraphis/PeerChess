@@ -65,13 +65,16 @@ html, body {
 }
 
 #gameboard {
-
+	background-image: url('board.png');
+	background-size: 100% 100%;
 }
 
 #fields {
 	width: 80%;
 	height: 80%;
 	position: relative;
+	top: 10%;
+	left: 10%;
 }
 
 #chat {
