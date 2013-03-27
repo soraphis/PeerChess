@@ -1,0 +1,32 @@
+<html>
+	<head>
+		<title>PeerChess</title>
+        <link rel="stylesheet" type="text/css" href="peerchess.css"></link>
+	</head>
+	<body>
+        <div id="connection-dialog">
+          <p>
+						<label for="remote-id">Your opponent's ID: </label><input type="text" name="remote-id" id="remote-id" />
+						My ID: <span id="local-id"><em>loading...</em></span>
+          </p>
+        </div>
+        <div id="game" style="display: none;">
+					<div id="gameboard">
+						<div id="fields">
+
+						</div>
+					</div>
+					<div id="chat">
+						<div id="messages">
+
+						</div>
+						<div>
+							<input type="text" placeholder="write message..." id="chat-write-message"></input>
+						</div>
+					</div>
+        </div>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script src="http://cdn.peerjs.com/0/peer.js"></script>
+		<script src="peerchess.js"></script>
+	</body>
+</html>

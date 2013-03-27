@@ -1,0 +1,36 @@
+
+html, body {
+	font-family: Arial, sans-serif;
+	color: #333;
+	font-size: 12px;
+}
+
+#chat {
+	border: 1px solid #333;
+}
+
+#chat #messages {
+	background-color: #EEE;
+	height: 200px;
+	overflow-y: scroll;
+}
+
+#chat #messages p {
+	margin: 1px 0 1px 0;
+}
+
+#chat #messages .message-type-me {
+	color: blue;
+}
+
+#chat #messages .message-type-opponent {
+	color: red;
+}
+
+#chat #messages .message-type-notice {
+	font-style: italic;
+}
+
+#chat #chat-write-message {
+	width: 100%;
+}
