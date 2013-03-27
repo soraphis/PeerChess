@@ -5,6 +5,75 @@ html, body {
 	font-size: 12px;
 }
 
+#game {
+
+}
+
+#game .figure {
+	width: 12.5%;
+	height: 12.5%;
+	background-size: 600% 200%;
+	position: absolute;
+}
+
+#game .figure.white-king {
+	background-position: 0% 0%;
+}
+
+#game .figure.white-queen {
+	background-position: 20% 0%;
+}
+
+#game .figure.white-rook {
+	background-position: 40% 0%;
+}
+
+#game .figure.white-knight {
+	background-position: 60% 0%;
+}
+
+#game .figure.white-bishop {
+	background-position: 80% 0%;
+}
+
+#game .figure.white-pawn {
+	background-position: 100% 0%;
+}
+
+#game .figure.black-king {
+	background-position: 0% 100%;
+}
+
+#game .figure.black-queen {
+	background-position: 20% 100%;
+}
+
+#game .figure.black-rook {
+	background-position: 40% 100%;
+}
+
+#game .figure.black-knight {
+	background-position: 60% 100%;
+}
+
+#game .figure.black-bishop {
+	background-position: 80% 100%;
+}
+
+#game .figure.black-pawn {
+	background-position: 100% 100%;
+}
+
+#gameboard {
+
+}
+
+#fields {
+	width: 80%;
+	height: 80%;
+	position: relative;
+}
+
 #chat {
 	border: 1px solid #333;
 }

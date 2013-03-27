@@ -85,6 +85,10 @@ function setGameRole(role) {
 	initGame();
 }
 
+function shutdownGame(reason) {
+	location.reload();
+}
+
 $(document).ready(function() {
 	peer = new Peer({key: myPeerApiKey, debug: true});
 	peer.on('open', function (id) {
@@ -98,6 +102,9 @@ $(document).ready(function() {
 			connection.on('data', function(data) {
 				parseIncomingData(data);
 			});
+			connection.on('close', function() {
+				shutdownGame();
+			});
 		}
 	});
 
@@ -110,6 +117,9 @@ $(document).ready(function() {
 					conn = connection;
 					connection.on('data', function(data) {
 						parseIncomingData(data);
+					});
+					connection.on('close', function() {
+						shutdownGame();
 					});
 				}
 			});

@@ -1,7 +1,8 @@
 <html>
 	<head>
 		<title>PeerChess</title>
-        <link rel="stylesheet" type="text/css" href="peerchess.css"></link>
+    	<link rel="stylesheet" type="text/css" href="peerchess.css"></link>
+			<link rel="stylesheet" type="text/css" href="figures/beholder.css"></link>
 	</head>
 	<body>
         <div id="connection-dialog">
@@ -11,9 +12,20 @@
           </p>
         </div>
         <div id="game" style="display: none;">
-					<div id="gameboard">
+					<div id="gameboard" style="width: 500px; height: 500px;">
 						<div id="fields">
-
+							<div class="figure white-king"></div>
+							<div class="figure white-queen"></div>
+							<div class="figure white-rook"></div>
+							<div class="figure white-knight"></div>
+							<div class="figure white-bishop"></div>
+							<div class="figure white-pawn"></div>
+							<div class="figure black-king"></div>
+							<div class="figure black-queen"></div>
+							<div class="figure black-rook"></div>
+							<div class="figure black-knight"></div>
+							<div class="figure black-bishop"></div>
+							<div class="figure black-pawn"></div>
 						</div>
 					</div>
 					<div id="chat">
