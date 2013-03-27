@@ -68,7 +68,20 @@ var PeerChessGame = function() {
 	}
 
 	this.move = function(src, dst) {
-
+		var sourceFigure = $('#fields div.figure[data-chess-position="'+src+'"]');
+		var destinationFigure = $('#fields div.figure[data-chess-position="'+dst+'"]');
+		// field owned by own figure?
+		if (element.length == 1 && ((challenger == true) == (destinationFigure.attr('data-color') == 'black'))) {
+			chatAppendNotice('On this field there\'s already your <strong>'+destinationFigure.attr('data-type')+'</strong>!');
+			return false;
+		}
+		// check for a valid move
+		if (this.validateMove(src, dst)) {
+			// TODO: MOVE AND SEND MOVE
+		}
+		else {
+			chatAppendNotice('Illegal move!');
+		}
 	}
 
 	this.onClick = function(chessPosition) {
@@ -83,10 +96,16 @@ var PeerChessGame = function() {
 			// try to move
 			var marked = $('#fields div.figure.marked');
 			if (marked.length == 1) {
+				$('#fields div.figure').removeClass('marked');
 				this.move(marked.attr('data-chess-position'), chessPosition);
 			}
 		}
 
+	}
+
+	this.validateMove = function(src, dst) {
+		// TODO VALIDATE
+		return true;
 	}
 
 	// set default figures
