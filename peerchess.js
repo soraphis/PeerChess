@@ -9,7 +9,7 @@ var myPeerApiKey = 'byzn0pwgnt2csor';
 // brain
 var peer = null;
 var conn = null;
-var challenger = null;
+var challenger = null; // true = black, false = white
 var game = null;
 
 /**
@@ -67,9 +67,25 @@ var PeerChessGame = function() {
 		return color+'-'+type;
 	}
 
+	this.move = function(src, dst) {
+
+	}
+
 	this.onClick = function(chessPosition) {
 		var element = $('#fields div.figure[data-chess-position="'+chessPosition+'"]');
-		if (element.length != 1) return false;
+		// should we mark this figure?
+		if (element.length == 1 && ((challenger == true) == (element.attr('data-color') == 'black'))) {
+			// mark it
+			$('#fields div.figure').removeClass('marked');
+			element.addClass('marked');
+		}
+		else if (element.length == 0 || (element.length == 1 && ((challenger == true) != (element.attr('data-color') == 'black')))) {
+			// try to move
+			var marked = $('#fields div.figure.marked');
+			if (marked.length == 1) {
+				this.move(marked.attr('data-chess-position'), chessPosition);
+			}
+		}
 
 	}
 

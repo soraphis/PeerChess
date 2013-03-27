@@ -16,6 +16,10 @@ html, body {
 	position: absolute;
 }
 
+#game .figure.marked {
+	background-color: yellow;
+}
+
 #game .figure.white-king {
 	background-position: 0% 0%;
 }
