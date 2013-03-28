@@ -20,51 +20,51 @@ html, body {
 	background-color: yellow;
 }
 
-#game .figure.white-king {
+#game .figure[data-color='white'][data-type='king'] {
 	background-position: 0% 0%;
 }
 
-#game .figure.white-queen {
+#game .figure[data-color='white'][data-type='queen'] {
 	background-position: 20% 0%;
 }
 
-#game .figure.white-rook {
+#game .figure[data-color='white'][data-type='rook'] {
 	background-position: 40% 0%;
 }
 
-#game .figure.white-knight {
+#game .figure[data-color='white'][data-type='knight'] {
 	background-position: 60% 0%;
 }
 
-#game .figure.white-bishop {
+#game .figure[data-color='white'][data-type='bishop'] {
 	background-position: 80% 0%;
 }
 
-#game .figure.white-pawn {
+#game .figure[data-color='white'][data-type='pawn'] {
 	background-position: 100% 0%;
 }
 
-#game .figure.black-king {
+#game .figure[data-color='black'][data-type='king'] {
 	background-position: 0% 100%;
 }
 
-#game .figure.black-queen {
+#game .figure[data-color='black'][data-type='queen'] {
 	background-position: 20% 100%;
 }
 
-#game .figure.black-rook {
+#game .figure[data-color='black'][data-type='rook'] {
 	background-position: 40% 100%;
 }
 
-#game .figure.black-knight {
+#game .figure[data-color='black'][data-type='knight'] {
 	background-position: 60% 100%;
 }
 
-#game .figure.black-bishop {
+#game .figure[data-color='black'][data-type='bishop'] {
 	background-position: 80% 100%;
 }
 
-#game .figure.black-pawn {
+#game .figure[data-color='black'][data-type='pawn'] {
 	background-position: 100% 100%;
 }
 
