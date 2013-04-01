@@ -128,7 +128,10 @@ var PeerChessGame = Class.create({
 	},
 
 	move: function(src, dst) {
+		console.log(src);
+		console.log(dst);
 		var figure = this.getFigureAt(src.posX, src.posY);
+		console.log(figure);
 		if (figure === undefined) return false;
 		var dstFigure = this.getFigureAt(dst.posX, dst.posY);
 		if (dstFigure !== undefined && dstFigure.getColor() == figure.getColor()) return false;
@@ -292,12 +295,12 @@ document.observe("dom:loaded", function() {
 			Effect.Appear(template);
 		},
 		onFigureMove: function(data) {
-			var figure = $$('#fields .figure[data-position=x"'+data.src.posX+'"][data-position-y="'+data.src.posY+'"]').first();
+			var figure = $$('#fields .figure[data-position-x="'+data.src.posX+'"][data-position-y="'+data.src.posY+'"]').first();
 			figure.setAttribute('data-position-x', data.dst.posX);
 			figure.setAttribute('data-position-y', data.dst.posY);
 		},
 		onFigureRemove: function(data) {
-			var figure = $$('#fields .figure[data-position=x"'+data.position.posX+'"][data-position-y="'+data.position.posY+'"]').first();
+			var figure = $$('#fields .figure[data-position-x="'+data.position.posX+'"][data-position-y="'+data.position.posY+'"]').first();
 			Effect.Fade(figure);
 			figure.remove();
 		}
@@ -318,7 +321,7 @@ document.observe("dom:loaded", function() {
 	function getSelectedPosition() {
 		var selected = $$('#fields .figure.selected')
 		if (selected.length == 0) return null;
-		return {posX: selected.first().getAttribute('data-position-x'), posY: selected.first().getAttribute('data-position-y')};
+		return {posX: parseInt(selected.first().getAttribute('data-position-x')), posY: parseInt(selected.first().getAttribute('data-position-y'))};
 	}
 
 	$('remote-id').observe('keyup', function(event) {
