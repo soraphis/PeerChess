@@ -22,6 +22,7 @@ var PeerChessGame = Class.create({
 			'key': options.peerApiKey,
 			'debug': true
 		});
+		this.connection = null;
 		var that = this;
 		this.peer.on('open', function(peerId) {
 			that.gameStatus = GAME_STATUS_INITIALIZED;
@@ -39,6 +40,7 @@ var PeerChessGame = Class.create({
 					// that.peer.disconnect(); // TODO waiting for implementation of this function
 					that.gameStatus = GAME_STATUS_RUNNING;
 					that.connection = connection;
+					that.executeCallback('onConnected');
 					that.connection.on('data', function(data) {
 						that.parseIncomingData(data);
 					});
@@ -56,6 +58,7 @@ var PeerChessGame = Class.create({
 				// that.peer.disconnect(); // TODO waiting for implementation of this function
 				that.gameStatus = GAME_STATUS_RUNNING;
 				that.connection = connection;
+				that.executeCallback('onConnected');
 				that.connection.on('data', function(data) {
 					that.parseIncomingData(data);
 				});
@@ -75,6 +78,15 @@ var PeerChessGame = Class.create({
 
 	parseIncomingData: function(data) {
 
+	},
+
+	sendChatMessage: function(text) {
+		return this.sendData('PRIVMSG', text);
+	},
+
+	sendData: function(type, data) {
+		console.log(this.connection);
+		return this.connection.send('test');
 	}
 });
 
@@ -144,12 +156,26 @@ document.observe("dom:loaded", function() {
 	}, {
 		onInitialized: function(data) {
 			$('local-id').update(data.peerId);
+		},
+		onConnected: function() {
+			$('connection-dialog').hide();
+			$('game').show();
 		}
 	});
 
 	$('remote-id').observe('keyup', function(event) {
 		if (event.keyCode == 13) {
 			game.connectToPeer($('remote-id').getValue());
+		}
+	});
+
+	$('chat-write-message').observe('keyup', function(event) {
+		if (event.keyCode == 13) {
+			var message = $('chat-write-message').getValue().trim();
+			if (message.length > 0) {
+				game.sendChatMessage(message);
+			}
+			$('chat-write-message').setValue('');
 		}
 	});
 });
