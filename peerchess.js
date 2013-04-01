@@ -77,7 +77,19 @@ var PeerChessGame = Class.create({
 	},
 
 	parseIncomingData: function(data) {
-
+		// parse string
+		var index = data.indexOf(' ');
+		if (index <= 0) return false;
+		var dataType = data.substr(0, index);
+		var dataContent = data.substr(index+1);
+		switch (dataType) {
+			case "MOVE":
+				// TODO implement
+				break;
+			case "PRIVMSG":
+				this.executeCallback('onChatMessage', {'message': dataContent});
+				break;
+		}
 	},
 
 	sendChatMessage: function(text) {
@@ -85,8 +97,7 @@ var PeerChessGame = Class.create({
 	},
 
 	sendData: function(type, data) {
-		console.log(this.connection);
-		return this.connection.send('test');
+		return this.connection.send(type+' '+data);
 	}
 });
 
@@ -160,6 +171,15 @@ document.observe("dom:loaded", function() {
 		onConnected: function() {
 			$('connection-dialog').hide();
 			$('game').show();
+			$('chat-write-message').focus();
+		},
+		onChatMessage: function(data) {
+			var template = new Element('p',{
+				class: 'message-type-opponent'
+			});
+			template.update('<strong>Opponent: </strong><span></span>');
+			template.down('span').update(data.message.escapeHTML());
+			$('messages').appendChild(template);
 		}
 	});
 
@@ -174,6 +194,12 @@ document.observe("dom:loaded", function() {
 			var message = $('chat-write-message').getValue().trim();
 			if (message.length > 0) {
 				game.sendChatMessage(message);
+				var template = new Element('p',{
+					class: 'message-type-me'
+				});
+				template.update('<strong>You: </strong><span></span>');
+				template.down('span').update(message.escapeHTML());
+				$('messages').appendChild(template);
 			}
 			$('chat-write-message').setValue('');
 		}
