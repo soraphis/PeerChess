@@ -133,6 +133,7 @@ var PeerChessGame = Class.create({
 	},
 
 	move: function(src, dst) {
+		if (src.posX == dst.posX && src.posY == dst.posY) return false;
 		var figure = this.getFigureAt(src.posX, src.posY);
 		if (figure === undefined) return false;
 		var dstFigure = this.getFigureAt(dst.posX, dst.posY);
@@ -259,7 +260,25 @@ var RookFigure = Class.create(PeerChessFigure, {
 	},
 
 	validateMove: function(src, dst, field) {
-		return true; // TODO implement
+		if (src.posX == dst.posX) {
+			if (src.posY > dst.posY) {
+				for (i = dst.posY+1; i < src.posY; i++) if (field[src.posX][i] !== undefined) return false;
+			}
+			else {
+				for (i = src.posY+1; i < dst.posY; i++) if (field[src.posX][i] !== undefined) return false;
+			}
+			return true;
+		}
+		else if (src.posY == dst.posY) {
+			if (src.posX > dst.posX) {
+				for (i = dst.posX+1; i < src.posX; i++) if (field[i][src.posY] !== undefined) return false;
+			}
+			else {
+				for (i = src.posX+1; i < dst.posX; i++) if (field[i][src.posY] !== undefined) return false;
+			}
+			return true;
+		}
+		return false;
 	}
 });
 
