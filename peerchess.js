@@ -138,12 +138,14 @@ var PeerChessGame = Class.create({
 		var dstFigure = this.getFigureAt(dst.posX, dst.posY);
 		if (dstFigure !== undefined && dstFigure.getColor() == figure.getColor()) return false;
 		if (figure.validateMove(src, dst, this.field)) {
+			this.switchTurn();
 			var code = figure.executeMove(src, dst, this.field);
 			this.sendMove(code);
 			if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {position: dst});
 			this.executeCallback('onFigureMove', {src: src, dst: dst});
+			this.executeCallback('onNotice', {message: 'You moved your <strong>'+figure.getType()+'</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong>.'});
+			// here is the right place for en passant / rochade check
 		}
-
 	},
 
 	onTurn: function() {
@@ -158,8 +160,24 @@ var PeerChessGame = Class.create({
 		var dataContent = data.substr(index+1);
 		switch (dataType) {
 			case "MOVE":
-				console.log('incoming move "'+dataContent+'"');
-				// TODO implement
+				// check for rochade
+				// else:
+				var src = posString2Index(dataContent.substr(0,2));
+				var dst = posString2Index(dataContent.substr(3,2));
+				var figure = this.getFigureAt(src.posX, src.posY);
+				// if (figure === undefined) return false; // TODO check for remote foobar
+				var dstFigure = this.getFigureAt(dst.posX, dst.posY);
+				// if (dstFigure !== undefined && dstFigure.getColor() == figure.getColor()) return false; // TODO check for remote foobar
+				if (figure.validateMove(src, dst, this.field)) {
+					var code = figure.executeMove(src, dst, this.field);
+					if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {position: dst});
+					this.executeCallback('onFigureMove', {src: src, dst: dst});
+					this.executeCallback('onNotice', {message: 'Your opponent moved the <strong>'+figure.getType()+'</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong>. Now it\'s your turn.'});
+					this.switchTurn();
+				}
+				else {
+					// TODO check for remote foobar
+				}
 				break;
 			case "PRIVMSG":
 				this.executeCallback('onChatMessage', {'message': dataContent});
@@ -177,6 +195,15 @@ var PeerChessGame = Class.create({
 
 	sendMove: function(code) {
 		return this.sendData('MOVE', code);
+	},
+
+	switchTurn: function() {
+		if (this.turn == 'white') {
+			this.turn = 'black';
+		}
+		else {
+			this.turn = 'white';
+		}
 	}
 });
 
