@@ -380,8 +380,9 @@ document.observe("dom:loaded", function() {
 		},
 		onFigureRemove: function(data) {
 			var figure = $$('#fields .figure[data-position-x="'+data.position.posX+'"][data-position-y="'+data.position.posY+'"]').first();
-			Effect.Fade(figure);
-			figure.remove();
+			Effect.Fade(figure, {
+				afterFinish: function() { figure.remove(); }
+			});
 		}
 	});
 
