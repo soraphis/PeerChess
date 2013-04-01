@@ -3,9 +3,6 @@
  * @author Matthias Lohr <matthias@lohr.me>
  */
 
-// settings
-var myPeerApiKey = 'byzn0pwgnt2csor';
-
 /**********************************************************************************************************************/
 // brain
 
@@ -18,10 +15,7 @@ var PeerChessGame = Class.create({
 	initialize: function(options, callbacks) {
 		this.callbacks = callbacks;
 		this.gameStatus = GAME_STATUS_LOADING;
-		this.peer = new Peer({
-			'key': options.peerApiKey,
-			'debug': true
-		});
+		this.peer = new Peer(options.peer);
 		this.connection = null;
 		this.myColor = null;
 		this.turn = 'white';
@@ -252,9 +246,7 @@ Element.prototype.fullPositionedOffset = function() {
 // interaction stuff
 document.observe("dom:loaded", function() {
 	// init game
-	var game = new PeerChessGame({
-		peerApiKey: myPeerApiKey
-	}, {
+	var game = new PeerChessGame(peerChessConfig, {
 		onInitialized: function(data) {
 			$('local-id').update(data.peerId);
 		},
