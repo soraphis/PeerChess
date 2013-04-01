@@ -128,7 +128,23 @@ var PeerChessGame = Class.create({
 	},
 
 	move: function(src, dst) {
-
+		var figure = this.getFigureAt(src.posX, src.posY);
+		if (figure === undefined) return false;
+		var dstFigure = this.getFigureAt(dst.posX, dst.posY);
+		if (dstFigure !== undefined && dstFigure.getColor() == figure.getColor()) return false;
+		if (!figure.validateMove(src, dst, this.field)) return false;
+		// update field
+		this.field[dst.posX][dst.posY] = figure;
+		this.field[src.posX][src.posY] = undefined;
+		if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {
+			figure: dstFigure,
+			position: dst
+		});
+		this.executeCallback('onFigureMove', {
+			figure: figure,
+			src: src,
+			dst: dst
+		});
 	},
 
 	onTurn: function() {
@@ -172,6 +188,10 @@ var PeerChessFigure = Class.create({
 
 	getType: function() {
 		return this.type;
+	},
+
+	validateMove: function(src, dst, field) {
+		return true; // TODO set to false! must me overwritten by child classes
 	}
 });
 
@@ -272,7 +292,9 @@ document.observe("dom:loaded", function() {
 			Effect.Appear(template);
 		},
 		onFigureMove: function(data) {
-
+			var figure = $$('#fields .figure[data-position=x"'+data.src.posX+'"][data-position-y="'+data.src.posY+'"]').first();
+			figure.setAttribute('data-position-x', data.dst.posX);
+			figure.setAttribute('data-position-y', data.dst.posY);
 		},
 		onFigureRemove: function(data) {
 			var figure = $$('#fields .figure[data-position=x"'+data.position.posX+'"][data-position-y="'+data.position.posY+'"]').first();
