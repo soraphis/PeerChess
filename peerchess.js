@@ -23,6 +23,8 @@ var PeerChessGame = Class.create({
 			'debug': true
 		});
 		this.connection = null;
+		this.myColor = null;
+		this.turn = 'white';
 		var that = this;
 		this.peer.on('open', function(peerId) {
 			that.gameStatus = GAME_STATUS_INITIALIZED;
@@ -41,7 +43,8 @@ var PeerChessGame = Class.create({
 					that.gameStatus = GAME_STATUS_RUNNING;
 					that.connection = connection;
 					that.executeCallback('onConnected');
-					that.initGameBoard();
+					that.initGameBoard('black');
+					that.executeCallback('onNotice', {message: 'You challenged the other player, so you\'re playing with <strong>black</strong>!'});
 					that.connection.on('data', function(data) {
 						that.parseIncomingData(data);
 					});
@@ -60,7 +63,9 @@ var PeerChessGame = Class.create({
 				that.gameStatus = GAME_STATUS_RUNNING;
 				that.connection = connection;
 				that.executeCallback('onConnected');
-				that.initGameBoard();
+				that.initGameBoard('white');
+				that.executeCallback('onNotice', {message: 'You has been challenged, so you\'re playing with <strong>white</strong>!'});
+				that.executeCallback('onNotice', {message: 'Come on, make your first move!'});
 				that.connection.on('data', function(data) {
 					that.parseIncomingData(data);
 				});
@@ -80,11 +85,24 @@ var PeerChessGame = Class.create({
 		return true;
 	},
 
+	getFigureAt: function(x, y) {
+		return this.field[x][y];
+	},
+
 	getGameStatus: function() {
 		return this.gameStatus;
 	},
 
-	initGameBoard: function() {
+	getMyColor: function() {
+		return this.myColor;
+	},
+
+	getTurnColor: function() {
+		return this.turn;
+	},
+
+	initGameBoard: function(myColor) {
+		this.myColor = myColor;
 		this.field = new Array(8);
 		for (i = 0; i <= 7; i++) this.field[i] = new Array(8);
 		this.figureAdd('white', RookFigure,   {posX: 0, posY: 0});
@@ -107,6 +125,14 @@ var PeerChessGame = Class.create({
 			this.figureAdd('white', PawnFigure,   {posX: x, posY: 1});
 			this.figureAdd('black', PawnFigure,   {posX: x, posY: 6});
 		}
+	},
+
+	move: function(src, dst) {
+
+	},
+
+	onTurn: function() {
+	  return (this.getMyColor() == this.getTurnColor());
 	},
 
 	parseIncomingData: function(data) {
@@ -185,6 +211,21 @@ var PawnFigure = Class.create(PeerChessFigure, {
 	}
 });
 
+// prototype extension
+
+Element.prototype.fullPositionedOffset = function() {
+	var offset = this.positionedOffset();
+	var parent = this.getOffsetParent();
+	if (parent && parent != this) {
+		var tmp = parent.fullPositionedOffset();
+		offset[0] += tmp[0];
+		offset[1] += tmp[1];
+		offset['top'] += tmp['top'];
+		offset['left'] += tmp['left'];
+	}
+	return offset;
+}
+
 // interaction stuff
 document.observe("dom:loaded", function() {
 	// init game
@@ -207,28 +248,56 @@ document.observe("dom:loaded", function() {
 			template.down('span').update(data.message.escapeHTML());
 			$('messages').appendChild(template);
 		},
+		onNotice: function(data) {
+			var template = new Element('p',{
+				class: 'message-type-notice'
+			});
+			template.update('<span></span>');
+			template.down('span').update(data.message);
+			$('messages').appendChild(template);
+		},
 		onFigureAdd: function(data) {
+			// create element
 			var template = new Element('div', {
 				class: 'figure',
 				'data-color': data.figure.getColor(),
 				'data-type': data.figure.getType(),
-				'style': 'position: absolute; display: none;',
+				'data-position-x': data.position.posX,
+				'data-position-y': data.position.posY,
+				'style': 'position: absolute; display: none; z-index: 0;',
 				title: data.figure.getColor()+' '+data.figure.getType()
 			});
-			template.setStyle({
-				left: data.position.posX*12.5+'%',
-				top: (87.5-data.position.posY*12.5)+'%'
-			});
+			// show figure
 			$('fields').appendChild(template);
 			Effect.Appear(template);
 		},
-		onFigureMove: function() {
+		onFigureMove: function(data) {
 
 		},
-		onFigureRemove: function() {
-
+		onFigureRemove: function(data) {
+			var figure = $$('#fields .figure[data-position=x"'+data.position.posX+'"][data-position-y="'+data.position.posY+'"]').first();
+			Effect.Fade(figure);
+			figure.remove();
 		}
 	});
+
+	function resetFigureSelection() {
+		var selected = $$('#fields .figure.selected');
+		for (i = 0; i < selected.length; i++) {
+			selected[i].removeClassName('selected');
+		}
+	}
+
+	function selectFigureAt(x, y) {
+		resetFigureSelection();
+		$$('#fields .figure[data-position-x="'+x+'"][data-position-y="'+y+'"]').first().addClassName('selected');
+	}
+
+	function getSelectedPosition() {
+		var selected = $$('#fields .figure.selected')
+		if (selected.length == 0) return null;
+		return {posX: selected.first().getAttribute('data-position-x'), posY: selected.first().getAttribute('data-position-y')};
+	}
 
 	$('remote-id').observe('keyup', function(event) {
 		if (event.keyCode == 13) {
@@ -249,6 +318,24 @@ document.observe("dom:loaded", function() {
 				$('messages').appendChild(template);
 			}
 			$('chat-write-message').setValue('');
+		}
+	});
+
+	$('fields').observe('click', function(event) {
+		if (!game.onTurn()) return;
+		// calculate relative click position
+		var relativeX = event.pageX - this.fullPositionedOffset()[0];
+		var relativeY = event.pageY - this.fullPositionedOffset()[1];
+		var fieldX = Math.floor(8*relativeX/this.getWidth());
+		var fieldY = 7-Math.floor(8*relativeY/this.getHeight());
+		var figure = game.getFigureAt(fieldX, fieldY);
+		// select? move?
+		if (figure !== undefined && figure.getColor() == game.getMyColor()) {
+			selectFigureAt(fieldX, fieldY);
+		}
+		else if (getSelectedPosition() !== null) {
+			game.move(getSelectedPosition(), {posX: fieldX, posY: fieldY});
+			resetFigureSelection();
 		}
 	});
 });
