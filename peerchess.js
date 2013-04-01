@@ -41,6 +41,7 @@ var PeerChessGame = Class.create({
 					that.gameStatus = GAME_STATUS_RUNNING;
 					that.connection = connection;
 					that.executeCallback('onConnected');
+					that.initGameBoard();
 					that.connection.on('data', function(data) {
 						that.parseIncomingData(data);
 					});
@@ -59,6 +60,7 @@ var PeerChessGame = Class.create({
 				that.gameStatus = GAME_STATUS_RUNNING;
 				that.connection = connection;
 				that.executeCallback('onConnected');
+				that.initGameBoard();
 				that.connection.on('data', function(data) {
 					that.parseIncomingData(data);
 				});
@@ -72,8 +74,39 @@ var PeerChessGame = Class.create({
 		return this.callbacks[callbackName].call(this, options);
 	},
 
+	figureAdd: function(color, type, position) {
+		this.field[position.posX][position.posY] = new type(color);
+		this.executeCallback('onFigureAdd', {figure: this.field[position.posX][position.posY], position: position});
+		return true;
+	},
+
 	getGameStatus: function() {
 		return this.gameStatus;
+	},
+
+	initGameBoard: function() {
+		this.field = new Array(8);
+		for (i = 0; i <= 7; i++) this.field[i] = new Array(8);
+		this.figureAdd('white', RookFigure,   {posX: 0, posY: 0});
+		this.figureAdd('white', KnightFigure, {posX: 1, posY: 0});
+		this.figureAdd('white', BishopFigure, {posX: 2, posY: 0});
+		this.figureAdd('white', QueenFigure,  {posX: 3, posY: 0});
+		this.figureAdd('white', KingFigure,   {posX: 4, posY: 0});
+		this.figureAdd('white', BishopFigure, {posX: 5, posY: 0});
+		this.figureAdd('white', KnightFigure, {posX: 6, posY: 0});
+		this.figureAdd('white', RookFigure,   {posX: 7, posY: 0});
+		this.figureAdd('black', RookFigure,   {posX: 0, posY: 7});
+		this.figureAdd('black', KnightFigure, {posX: 1, posY: 7});
+		this.figureAdd('black', BishopFigure, {posX: 2, posY: 7});
+		this.figureAdd('black', QueenFigure,  {posX: 3, posY: 7});
+		this.figureAdd('black', KingFigure,   {posX: 4, posY: 7});
+		this.figureAdd('black', BishopFigure, {posX: 5, posY: 7});
+		this.figureAdd('black', KnightFigure, {posX: 6, posY: 7});
+		this.figureAdd('black', RookFigure,   {posX: 7, posY: 7});
+		for (x = 0; x <= 7; x++) {
+			this.figureAdd('white', PawnFigure,   {posX: x, posY: 1});
+			this.figureAdd('black', PawnFigure,   {posX: x, posY: 6});
+		}
 	},
 
 	parseIncomingData: function(data) {
@@ -103,23 +136,16 @@ var PeerChessGame = Class.create({
 
 var PeerChessFigure = Class.create({
 	initialize: function(color, type) {
-		this.element = new Element('div', {
-			'class': 'figure',
-			'data-color': color,
-			'data-type': type
-		});
+		this.color = color;
+		this.type = type;
 	},
 
 	getColor: function() {
-		return this.element.getAttribute('data-color');
-	},
-
-	getElement: function() {
-		return this.element;
+		return this.color;
 	},
 
 	getType: function() {
-		return this.element.getAttribute('data-type');
+		return this.type;
 	}
 });
 
@@ -180,6 +206,27 @@ document.observe("dom:loaded", function() {
 			template.update('<strong>Opponent: </strong><span></span>');
 			template.down('span').update(data.message.escapeHTML());
 			$('messages').appendChild(template);
+		},
+		onFigureAdd: function(data) {
+			var template = new Element('div', {
+				class: 'figure',
+				'data-color': data.figure.getColor(),
+				'data-type': data.figure.getType(),
+				'style': 'position: absolute; display: none;',
+				title: data.figure.getColor()+' '+data.figure.getType()
+			});
+			template.setStyle({
+				left: data.position.posX*12.5+'%',
+				top: (87.5-data.position.posY*12.5)+'%'
+			});
+			$('fields').appendChild(template);
+			Effect.Appear(template);
+		},
+		onFigureMove: function() {
+
+		},
+		onFigureRemove: function() {
+
 		}
 	});
 
