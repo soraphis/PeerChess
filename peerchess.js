@@ -11,6 +11,17 @@ var GAME_STATUS_INITIALIZED = 2; // waiting for remote connection
 var GAME_STATUS_RUNNING = 3; // active game
 var GAME_STATUS_FINISHED = 4;
 
+function posIndex2String(pos) {
+	return String.fromCharCode(97+pos.posX)+(pos.posY+1);
+}
+
+function posString2Index(pos) {
+	return {
+		posX: parseInt(pos.charCodeAt(0)-97),
+		posY: parseInt(pos.charAt(1))-1
+	};
+}
+
 var PeerChessGame = Class.create({
 	initialize: function(options, callbacks) {
 		this.callbacks = callbacks;
@@ -122,26 +133,17 @@ var PeerChessGame = Class.create({
 	},
 
 	move: function(src, dst) {
-		console.log(src);
-		console.log(dst);
 		var figure = this.getFigureAt(src.posX, src.posY);
-		console.log(figure);
 		if (figure === undefined) return false;
 		var dstFigure = this.getFigureAt(dst.posX, dst.posY);
 		if (dstFigure !== undefined && dstFigure.getColor() == figure.getColor()) return false;
-		if (!figure.validateMove(src, dst, this.field)) return false;
-		// update field
-		this.field[dst.posX][dst.posY] = figure;
-		this.field[src.posX][src.posY] = undefined;
-		if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {
-			figure: dstFigure,
-			position: dst
-		});
-		this.executeCallback('onFigureMove', {
-			figure: figure,
-			src: src,
-			dst: dst
-		});
+		if (figure.validateMove(src, dst, this.field)) {
+			var code = figure.executeMove(src, dst, this.field);
+			this.sendMove(code);
+			if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {position: dst});
+			this.executeCallback('onFigureMove', {src: src, dst: dst});
+		}
+
 	},
 
 	onTurn: function() {
@@ -156,6 +158,7 @@ var PeerChessGame = Class.create({
 		var dataContent = data.substr(index+1);
 		switch (dataType) {
 			case "MOVE":
+				console.log('incoming move "'+dataContent+'"');
 				// TODO implement
 				break;
 			case "PRIVMSG":
@@ -170,6 +173,10 @@ var PeerChessGame = Class.create({
 
 	sendData: function(type, data) {
 		return this.connection.send(type+' '+data);
+	},
+
+	sendMove: function(code) {
+		return this.sendData('MOVE', code);
 	}
 });
 
@@ -177,6 +184,13 @@ var PeerChessFigure = Class.create({
 	initialize: function(color, type) {
 		this.color = color;
 		this.type = type;
+	},
+
+	executeMove: function(src, dst, field) {
+		var hit = (field[dst.posX][dst.posY] !== undefined);
+		field[dst.posX][dst.posY] = field[src.posX][src.posY];
+		field[src.posX][src.posY] = undefined;
+		return posIndex2String(src)+(hit?'x':'-')+posIndex2String(dst);
 	},
 
 	getColor: function() {
@@ -188,43 +202,89 @@ var PeerChessFigure = Class.create({
 	},
 
 	validateMove: function(src, dst, field) {
-		return true; // TODO set to false! must me overwritten by child classes
+		return false;
 	}
 });
 
 var KingFigure = Class.create(PeerChessFigure, {
 	initialize: function($super, color) {
 		$super(color, 'king');
+	},
+
+	validateMove: function(src, dst, field) {
+		return false; // TODO implement
 	}
 });
 
 var QueenFigure = Class.create(PeerChessFigure, {
 	initialize: function($super, color) {
 		$super(color, 'queen');
+	},
+
+	validateMove: function(src, dst, field) {
+		return true; // TODO implement
 	}
 });
 
 var RookFigure = Class.create(PeerChessFigure, {
 	initialize: function($super, color) {
 		$super(color, 'rook');
+	},
+
+	validateMove: function(src, dst, field) {
+		return true; // TODO implement
 	}
 });
 
 var KnightFigure = Class.create(PeerChessFigure, {
 	initialize: function($super, color) {
 		$super(color, 'knight');
+	},
+
+	validateMove: function(src, dst, field) {
+		return true; // TODO implement
 	}
 });
 
 var BishopFigure = Class.create(PeerChessFigure, {
 	initialize: function($super, color) {
 		$super(color, 'bishop');
+	},
+
+	validateMove: function(src, dst, field) {
+		return true; // TODO implement
 	}
 });
 
 var PawnFigure = Class.create(PeerChessFigure, {
 	initialize: function($super, color) {
 		$super(color, 'pawn');
+	},
+
+	validateMove: function(src, dst, field) {
+		if (this.color == 'white') {
+			// moves for white pawns
+			// simple single step
+			if (src.posX == dst.posX && src.posY == dst.posY-1 && field[dst.posX][dst.posY] == undefined) return true;
+			// double step at beginning
+			if (src.posX == dst.posX && src.posY == 1 && dst.posY == 3 && field[dst.posX][2] == undefined && field[dst.posX][3] == undefined) return true;
+			// move diagonal and kill enemy
+			if ((src.posX == dst.posX-1 || src.posX == dst.posX+1) && src.posY == dst.posY-1 && field[dst.posX][dst.posY] != undefined && field[dst.posX][dst.posY].getColor() != this.getColor()) return true;
+			// en passant
+			// TODO implement
+		}
+		else {
+			// moves for black pawns
+			// simple single step
+			if (src.posX == dst.posX && src.posY == dst.posY+1 && field[dst.posX][dst.posY] == undefined) return true;
+			// double step at beginning
+			if (src.posX == dst.posX && src.posY == 6 && dst.posY == 4 && field[dst.posX][5] == undefined && field[dst.posX][4] == undefined) return true;
+			// move diagonal and kill enemy
+			if ((src.posX == dst.posX-1 || src.posX == dst.posX+1) && src.posY == dst.posY+1 && field[dst.posX][dst.posY] != undefined && field[dst.posX][dst.posY].getColor() != this.getColor()) return true;
+			// en passant
+			// TODO implement
+		}
+		return false;
 	}
 });
 
