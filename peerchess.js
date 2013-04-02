@@ -390,12 +390,20 @@ document.observe("dom:loaded", function() {
 			});
 			// show figure
 			$('fields').appendChild(template);
-			Effect.Appear(template);
+			new Effect.Appear(template);
 		},
 		onFigureMove: function(data) {
 			var figure = $$('#fields .figure[data-position-x="'+data.src.posX+'"][data-position-y="'+data.src.posY+'"]').first();
+			figure.setStyle({
+				left: data.src.posX*12.5+'%',
+				top: (87.5-data.src.posY*12.5)+'%'
+			});
 			figure.setAttribute('data-position-x', data.dst.posX);
 			figure.setAttribute('data-position-y', data.dst.posY);
+			new Effect.Animate(figure, {properties: {
+				left: data.dst.posX*12.5+'%',
+				top: (87.5-data.dst.posY*12.5)+'%'
+			}});
 		},
 		onFigureRemove: function(data) {
 			var figure = $$('#fields .figure[data-position-x="'+data.position.posX+'"][data-position-y="'+data.position.posY+'"]').first();
