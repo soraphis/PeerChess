@@ -77,7 +77,6 @@ var PeerChessGame = Class.create({
 				});
 			}
 		});
-
 	},
 
 	executeCallback: function(callbackName, options) {
@@ -126,7 +125,7 @@ var PeerChessGame = Class.create({
 	},
 
 	historyGetLastMove: function() {
-		this.history[this.history.length-1];
+		return this.history[this.history.length-1];
 	},
 
 	initGameBoard: function(myColor) {
@@ -155,6 +154,21 @@ var PeerChessGame = Class.create({
 		}
 	},
 
+	isEnPassantMove: function(src, dst) {
+		if (!(this.field[src.posX][src.posY] instanceof PawnFigure)) return false;
+		if (this.field[dst.posX][dst.posY] !== undefined) return false;
+		if (!(this.field[dst.posX][src.posY] instanceof PawnFigure)) return false;
+		if (this.field[src.posX][src.posY].getColor() == this.field[dst.posX][src.posY].getColor()) return false;
+		var lastMove = this.historyGetLastMove().substr(0,5);
+		if (this.field[src.posX][src.posY].getColor() == 'white') {
+			if (src.posY == 4 && dst.posY == 5 && Math.abs(src.posX-dst.posX) == 1 && lastMove == posIndex2String({posX: dst.posX, posY: 6})+'-'+posIndex2String({posX: dst.posX, posY: 4})) return true;
+		}
+		else {
+			if (src.posY == 3 && dst.posY == 2 && Math.abs(src.posX-dst.posX) == 1 && lastMove == posIndex2String({posX: dst.posX, posY: 1})+'-'+posIndex2String({posX: dst.posX, posY: 3})) return true;
+		}
+		return false;
+	},
+
 	move: function(src, dst) {
 		if (src.posX == dst.posX && src.posY == dst.posY) return false;
 		if (src.posX < 0 || src.posX > 7 || src.posY < 0 || src.posY > 7 || dst.posX < 0 || dst.posX > 7 || dst.posY < 0 || dst.posY > 7) return false;
@@ -162,7 +176,19 @@ var PeerChessGame = Class.create({
 		if (figure === undefined) return false;
 		var dstFigure = this.getFigureAt(dst.posX, dst.posY);
 		if (dstFigure !== undefined && dstFigure.getColor() == figure.getColor()) return false;
-		if (figure.validateMove(src, dst, this.field)) {
+		if (this.isEnPassantMove(src, dst)) {
+			this.switchTurn();
+			figure.executeMove(src, dst, this.field);
+			var code = posIndex2String(src)+'x'+posIndex2String(dst);
+			this.field[dst.posX][src.posY] = undefined;
+			this.executeCallback('onFigureRemove', {position: {posX: dst.posX, posY: src.posY }});
+			this.executeCallback('onFigureMove', {src: src, dst: dst});
+			this.executeCallback('onNotice', {message: 'You moved your <strong>pawn</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong> and killed your enemy en passant.'});
+			if (this.playerIsInChess(this.getEnemyColor())) code += '+';
+			this.sendMove(code);
+			this.historyAppend(code);
+		}
+		else if (figure.validateMove(src, dst, this.field)) {
 			this.switchTurn();
 			var code = figure.executeMove(src, dst, this.field);
 			if (code == 'O-O-O') {
@@ -217,17 +243,28 @@ var PeerChessGame = Class.create({
 					var dst = posString2Index(dataContent.substr(3,2));
 					var figure = this.getFigureAt(src.posX, src.posY);
 					// if (figure === undefined) return false; // TODO check for remote foobar
-					var dstFigure = this.getFigureAt(dst.posX, dst.posY);
-					// if (dstFigure !== undefined && dstFigure.getColor() == figure.getColor()) return false; // TODO check for remote foobar
-					if (figure.validateMove(src, dst, this.field)) {
-						var code = figure.executeMove(src, dst, this.field);
-						if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {position: dst});
+					if (this.isEnPassantMove(src, dst)) {
+						figure.executeMove(src, dst, this.field);
+						var code = posIndex2String(src)+'x'+posIndex2String(dst);
+						this.field[dst.posX][src.posY] = undefined;
+						this.executeCallback('onFigureRemove', {position: {posX: dst.posX, posY: src.posY }});
 						this.executeCallback('onFigureMove', {src: src, dst: dst});
-						this.executeCallback('onNotice', {message: 'Your opponent moved the <strong>'+figure.getType()+'</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong>. Now it\'s your turn.'});
+						this.executeCallback('onNotice', {message: 'Your opponent moved the <strong>pawn</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong> and killed your figure en passant.'});
 						this.switchTurn();
 					}
 					else {
-						// TODO check for remote foobar
+						var dstFigure = this.getFigureAt(dst.posX, dst.posY);
+						// if (dstFigure !== undefined && dstFigure.getColor() == figure.getColor()) return false; // TODO check for remote foobar
+						if (figure.validateMove(src, dst, this.field)) {
+							var code = figure.executeMove(src, dst, this.field);
+							if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {position: dst});
+							this.executeCallback('onFigureMove', {src: src, dst: dst});
+							this.executeCallback('onNotice', {message: 'Your opponent moved the <strong>'+figure.getType()+'</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong>. Now it\'s your turn.'});
+							this.switchTurn();
+						}
+						else {
+							// TODO check for remote foobar
+						}
 					}
 				}
 				this.historyAppend(dataContent);
@@ -458,8 +495,6 @@ var PawnFigure = Class.create(PeerChessFigure, {
 			if (src.posX == dst.posX && src.posY == 1 && dst.posY == 3 && field[dst.posX][2] == undefined && field[dst.posX][3] == undefined) return true;
 			// move diagonal and kill enemy
 			if ((src.posX == dst.posX-1 || src.posX == dst.posX+1) && src.posY == dst.posY-1 && field[dst.posX][dst.posY] != undefined && field[dst.posX][dst.posY].getColor() != this.getColor()) return true;
-			// en passant
-			// TODO implement
 		}
 		else {
 			// moves for black pawns
@@ -469,8 +504,6 @@ var PawnFigure = Class.create(PeerChessFigure, {
 			if (src.posX == dst.posX && src.posY == 6 && dst.posY == 4 && field[dst.posX][5] == undefined && field[dst.posX][4] == undefined) return true;
 			// move diagonal and kill enemy
 			if ((src.posX == dst.posX-1 || src.posX == dst.posX+1) && src.posY == dst.posY+1 && field[dst.posX][dst.posY] != undefined && field[dst.posX][dst.posY].getColor() != this.getColor()) return true;
-			// en passant
-			// TODO implement
 		}
 		return false;
 	}
