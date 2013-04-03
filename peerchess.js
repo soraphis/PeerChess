@@ -30,6 +30,7 @@ var PeerChessGame = Class.create({
 		this.connection = null;
 		this.myColor = null;
 		this.turn = 'white';
+		this.history = new Array();
 		var that = this;
 		this.peer.on('open', function(peerId) {
 			that.gameStatus = GAME_STATUS_INITIALIZED;
@@ -119,6 +120,15 @@ var PeerChessGame = Class.create({
 		return this.turn;
 	},
 
+	historyAppend: function(moveCode) {
+		this.history.push(moveCode);
+		this.executeCallback('onHistoryAppend', {code: moveCode});
+	},
+
+	historyGetLastMove: function() {
+		this.history[this.history.length-1];
+	},
+
 	initGameBoard: function(myColor) {
 		this.myColor = myColor;
 		this.field = new Array(8);
@@ -172,6 +182,7 @@ var PeerChessGame = Class.create({
 			}
 			if (this.playerIsInChess(this.getEnemyColor())) code += '+';
 			this.sendMove(code);
+			this.historyAppend(code);
 		}
 	},
 
@@ -219,6 +230,7 @@ var PeerChessGame = Class.create({
 						// TODO check for remote foobar
 					}
 				}
+				this.historyAppend(dataContent);
 				break;
 			case "PRIVMSG":
 				this.executeCallback('onChatMessage', {'message': dataContent});
@@ -540,6 +552,9 @@ document.observe("dom:loaded", function() {
 			Effect.Fade(figure, {
 				afterFinish: function() { figure.remove(); }
 			});
+		},
+		onHistoryAppend: function(data) {
+			// TODO implement. for example create history window
 		}
 	});
 
