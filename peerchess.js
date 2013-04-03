@@ -467,11 +467,11 @@ var BishopFigure = Class.create(PeerChessFigure, {
 				// Move South
 				if(dst.posX > src.posX) {
 					// Move East
-					for(x = src.posX - 1, y = src.posY - 1; x < dst.posX && y > dst.posY; x--, y--) if(field[x][y] !== undefined) return false;
+					for(x = src.posX + 1, y = src.posY - 1; x < dst.posX && y > dst.posY; x++, y--) if(field[x][y] !== undefined) return false;
 				}
 				else {
 					// Move West
-					for(x = src.posX + 1, y = src.posY - 1; x > dst.posX && y > dst.posY; x++, y--) if(field[x][y] !== undefined) return false;
+					for(x = src.posX - 1, y = src.posY - 1; x > dst.posX && y > dst.posY; x--, y--) if(field[x][y] !== undefined) return false;
 				}
 			}
 			return true;
