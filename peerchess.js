@@ -381,7 +381,16 @@ var KnightFigure = Class.create(PeerChessFigure, {
 	},
 
 	validateMove: function(src, dst, field) {
-		return true; // TODO implement
+		// each Knight has only 8 valid movements.
+		if ((src.posY+2 == dst.posY || src.posY-2 == dst.posY) && (src.posX+1 == dst.posX || src.posX-1 == dst.posX)) {
+			// Move to vertical (left or right)
+			return true;
+		}
+		if ((src.posX+2 == dst.posX || src.posX-2 == dst.posX) && (src.posY+1 == dst.posY || src.posY-1 == dst.posY)) {
+			// Move to horizental (up or down)
+			return true;
+		}
+		return false;
 	}
 });
 
