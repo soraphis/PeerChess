@@ -264,17 +264,32 @@ var KingFigure = Class.create(PeerChessFigure, {
 		return $super(src, dst, field); // TODO castling
 	},
 
+	isValidCastlingMove: function(src, dst, field) {
+		var row = (this.color == 'white'? 0:7);
+		if (src.posY == dst.posY == 0
+			&& src.posX == 4
+			&& dst.posX == 6
+			&& field[5][row] == undefined
+			&& field[6][row] == undefined
+			&& field[7][row] instanceof RookFigure
+			&& field[7][row].getColor() == this.color
+		) return true;
+		if (src.posY == dst.posY == 0
+			&& src.posX == 4
+			&& dst.posX == 2
+			&& field[3][row] == undefined
+			&& field[2][row] == undefined
+			&& field[1][row] == undefined
+			&& field[0][row] instanceof RookFigure
+			&& field[0][row].getColor() == this.color
+		) return true;
+		return false;
+	},
+
 	validateMove: function(src, dst, field) {
 		// default move
 		if (Math.abs(src.posX-dst.posX) <= 1 && Math.abs(src.posY-dst.posY) <= 1) return true;
-		if (this.color == 'white') {
-			if (src.posY == dst.posY == 0 && src.posX == 4 && dst.posX == 6 && field[0][5] == undefined && field[0][6] == undefined && field[0][7] instanceof RookFigure && field[0][7].getColor() == this.color) return true;
-			if (src.posY == dst.posY == 0 && src.posX == 4 && dst.posX == 2 && field[0][3] == undefined && field[0][2] == undefined && field[0][1] == undefined && field[0][0] instanceof RookFigure && field[0][0].getColor() == this.color) return true;
-		}
-		else {
-			if (src.posY == dst.posY == 7 && src.posX == 4 && dst.posX == 6 && field[7][5] == undefined && field[7][6] == undefined && field[7][7] instanceof RookFigure && field[7][7].getColor() == this.color) return true;
-			if (src.posY == dst.posY == 7 && src.posX == 4 && dst.posX == 2 && field[7][3] == undefined && field[7][2] == undefined && field[7][1] == undefined && field[7][0] instanceof RookFigure && field[7][0].getColor() == this.color) return true;
-		}
+		if (this.isValidCastlingMove(src, dst, field)) return true;
 		return false;
 	}
 });
