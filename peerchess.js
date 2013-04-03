@@ -543,6 +543,7 @@ document.observe("dom:loaded", function() {
 			template.update('<strong>Opponent: </strong><span></span>');
 			template.down('span').update(data.message.escapeHTML());
 			$('messages').appendChild(template);
+			new Effect.ScrollToBottom($('messages'));
 		},
 		onNotice: function(data) {
 			var template = new Element('p',{
@@ -551,6 +552,7 @@ document.observe("dom:loaded", function() {
 			template.update('<span></span>');
 			template.down('span').update(data.message);
 			$('messages').appendChild(template);
+			new Effect.ScrollToBottom($('messages'));
 		},
 		onFigureAdd: function(data) {
 			// create element
@@ -626,6 +628,7 @@ document.observe("dom:loaded", function() {
 				template.update('<strong>You: </strong><span></span>');
 				template.down('span').update(message.escapeHTML());
 				$('messages').appendChild(template);
+				new Effect.ScrollToBottom($('messages'));
 			}
 			$('chat-write-message').setValue('');
 		}

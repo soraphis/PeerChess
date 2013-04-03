@@ -36,3 +36,23 @@ Effect.Animate = Class.create(Effect.Base, {
 		this.element.setStyle(styles);
 	}
 });
+
+/**
+ * @author Andreas Litt <andreas.litt@gmail.com>
+ */
+Effect.ScrollToBottom = Class.create(Effect.Base, {
+	initialize: function(element) {
+		this.element = element;
+		this.scrollTopOld = element.scrollTop;
+		this.scrollHeight = element.scrollHeight;
+		this.start();
+	},
+
+	setup: function() {
+		//this.element.makePositioned();
+	},
+
+	update: function(position) {
+		this.element.scrollTop = this.scrollTopOld*(1.0-position)+this.scrollHeight*position;
+	}
+});
