@@ -56,6 +56,9 @@ var PeerChessGame = Class.create({
 					});
 				}
 			});
+			connection.on('close', function() {
+				that.onConnectionClose();
+			});
 		});
 	},
 
@@ -76,6 +79,9 @@ var PeerChessGame = Class.create({
 					that.parseIncomingData(data);
 				});
 			}
+		});
+		connection.on('close', function() {
+			that.onConnectionClose();
 		});
 	},
 
@@ -210,6 +216,11 @@ var PeerChessGame = Class.create({
 			this.sendMove(code);
 			this.historyAppend(code);
 		}
+	},
+
+	onConnectionClose: function() {
+		this.gameStatus = GAME_STATUS_FINISHED;
+		this.executeCallback('onNotice', {message: 'Your opponent has left the game. <a href="#" onclick="location.reload();">Start a new round here.</a>'});
 	},
 
 	onTurn: function() {
