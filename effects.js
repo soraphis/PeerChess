@@ -34,6 +34,5 @@ Effect.Animate = Class.create(Effect.Base, {
 			styles[p] = value+property.unit;
 		}
 		this.element.setStyle(styles);
-		console.log(styles);
 	}
 });
