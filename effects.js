@@ -17,7 +17,7 @@ Effect.Animate = Class.create(Effect.Base, {
 				property.oldValue = parseFloat(arguments[1].properties[p]);
 			}
 			property.newValue = parseFloat(arguments[1].properties[p]);
-			property.unit = arguments[1].properties[p].substr((new String(property.newValue)).length);
+			property.unit = (new String(arguments[1].properties[p])).substr((new String(property.newValue)).length);
 		}
 		this.start();
 	},
