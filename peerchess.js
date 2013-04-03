@@ -90,6 +90,10 @@ var PeerChessGame = Class.create({
 		return true;
 	},
 
+	getEnemyColor: function() {
+		return (this.myColor == 'white'?'black':'white');
+	},
+
 	getFigureAt: function(x, y) {
 		return this.field[x][y];
 	},
@@ -141,6 +145,7 @@ var PeerChessGame = Class.create({
 		if (figure.validateMove(src, dst, this.field)) {
 			this.switchTurn();
 			var code = figure.executeMove(src, dst, this.field);
+			if (this.playerIsInChess(this.getEnemyColor())) code += '+';
 			this.sendMove(code);
 			if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {position: dst});
 			this.executeCallback('onFigureMove', {src: src, dst: dst});
@@ -184,6 +189,21 @@ var PeerChessGame = Class.create({
 				this.executeCallback('onChatMessage', {'message': dataContent});
 				break;
 		}
+	},
+
+	playerIsInChess: function(color) {
+		var kingPos = null;
+		// find the king position
+		for (var x = 0; x <= 7; x++) for (var y = 0; y <= 7; y++) if (this.field[x][y] instanceof KingFigure && this.field[x][y].getColor() == color) {
+			kingPos = {posX: x, posY: y};
+		}
+		// check if enemy figure can hit the king
+		for (var x = 0; x <= 7; x++) for (var y = 0; y <= 7; y++) {
+			if (this.field[x][y] === undefined) continue;
+			if (this.field[x][y].getColor() == color) continue;
+			if (this.field[x][y].validateMove({posX: x, posY: y}, kingPos, this.field)) return true;
+		}
+		return false;
 	},
 
 	sendChatMessage: function(text) {
