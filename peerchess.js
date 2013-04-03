@@ -146,12 +146,23 @@ var PeerChessGame = Class.create({
 		if (figure.validateMove(src, dst, this.field)) {
 			this.switchTurn();
 			var code = figure.executeMove(src, dst, this.field);
+			if (code == 'O-O-O') {
+				this.executeCallback('onFigureMove', {src: src, dst: dst}); // move king
+				this.executeCallback('onFigureMove', {src: {posX: 0, posY: src.posY}, dst: {posX: 3, posY: src.posY}}); // move rook
+				this.executeCallback('onNotice', {message: 'You\'re castling!'});
+			}
+			else if (code == 'O-O') {
+				this.executeCallback('onFigureMove', {src: src, dst: dst}); // move king
+				this.executeCallback('onFigureMove', {src: {posX: 7, posY: src.posY}, dst: {posX: 5, posY: src.posY}}); // move rook
+				this.executeCallback('onNotice', {message: 'You\'re castling!'});
+			}
+			else {
+				if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {position: dst});
+				this.executeCallback('onFigureMove', {src: src, dst: dst});
+				this.executeCallback('onNotice', {message: 'You moved your <strong>'+figure.getType()+'</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong>.'});
+			}
 			if (this.playerIsInChess(this.getEnemyColor())) code += '+';
 			this.sendMove(code);
-			if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {position: dst});
-			this.executeCallback('onFigureMove', {src: src, dst: dst});
-			this.executeCallback('onNotice', {message: 'You moved your <strong>'+figure.getType()+'</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong>.'});
-			// here is the right place for en passant / castling check
 		}
 	},
 
@@ -167,23 +178,37 @@ var PeerChessGame = Class.create({
 		var dataContent = data.substr(index+1);
 		switch (dataType) {
 			case "MOVE":
-				// check for rochade
-				// else:
-				var src = posString2Index(dataContent.substr(0,2));
-				var dst = posString2Index(dataContent.substr(3,2));
-				var figure = this.getFigureAt(src.posX, src.posY);
-				// if (figure === undefined) return false; // TODO check for remote foobar
-				var dstFigure = this.getFigureAt(dst.posX, dst.posY);
-				// if (dstFigure !== undefined && dstFigure.getColor() == figure.getColor()) return false; // TODO check for remote foobar
-				if (figure.validateMove(src, dst, this.field)) {
-					var code = figure.executeMove(src, dst, this.field);
-					if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {position: dst});
-					this.executeCallback('onFigureMove', {src: src, dst: dst});
-					this.executeCallback('onNotice', {message: 'Your opponent moved the <strong>'+figure.getType()+'</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong>. Now it\'s your turn.'});
-					this.switchTurn();
+				if (dataContent == 'O-O-O' || dataContent == 'O-O-O+') {
+					// TODO check for remote foobar
+					var row = (this.getEnemyColor() == 'white'?0:7);
+					this.executeCallback('onFigureMove', {src: {posX: 4, posY: row}, dst: {posX: 2, posY: row}});
+					this.executeCallback('onFigureMove', {src: {posX: 0, posY: row}, dst: {posX: 3, posY: row}});
+					this.executeCallback('onNotice', {message: 'Your opponent is castling!'});
+				}
+				else if (dataContent == 'O-O' || dataContent == 'O-O+') {
+					// TODO check for remote foobar
+					var row = (this.getEnemyColor() == 'white'?0:7);
+					this.executeCallback('onFigureMove', {src: {posX: 4, posY: row}, dst: {posX: 6, posY: row}});
+					this.executeCallback('onFigureMove', {src: {posX: 7, posY: row}, dst: {posX: 5, posY: row}});
+					this.executeCallback('onNotice', {message: 'Your opponent is castling!'});
 				}
 				else {
-					// TODO check for remote foobar
+					var src = posString2Index(dataContent.substr(0,2));
+					var dst = posString2Index(dataContent.substr(3,2));
+					var figure = this.getFigureAt(src.posX, src.posY);
+					// if (figure === undefined) return false; // TODO check for remote foobar
+					var dstFigure = this.getFigureAt(dst.posX, dst.posY);
+					// if (dstFigure !== undefined && dstFigure.getColor() == figure.getColor()) return false; // TODO check for remote foobar
+					if (figure.validateMove(src, dst, this.field)) {
+						var code = figure.executeMove(src, dst, this.field);
+						if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {position: dst});
+						this.executeCallback('onFigureMove', {src: src, dst: dst});
+						this.executeCallback('onNotice', {message: 'Your opponent moved the <strong>'+figure.getType()+'</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong>. Now it\'s your turn.'});
+						this.switchTurn();
+					}
+					else {
+						// TODO check for remote foobar
+					}
 				}
 				break;
 			case "PRIVMSG":
@@ -261,12 +286,26 @@ var KingFigure = Class.create(PeerChessFigure, {
 	},
 
 	executeMove: function($super, src, dst, field) {
-		return $super(src, dst, field); // TODO castling
+		if (this.isValidCastlingMove(src, dst, field)) {
+			if (dst.posX == 2) { // O-O-O
+				$super(src, dst, field); // move king
+				$super({posX: 0, posY: src.posY}, {posX: 3, posY: src.posY}, field); // move rook
+				return 'O-O-O';
+			}
+			else { // O-O
+				$super(src, dst, field); // move king
+				$super({posX: 7, posY: src.posY}, {posX: 5, posY: src.posY}, field); // move rook
+				return 'O-O';
+			}
+		}
+		else {
+			return $super(src, dst, field);
+		}
 	},
 
 	isValidCastlingMove: function(src, dst, field) {
 		var row = (this.color == 'white'? 0:7);
-		if (src.posY == dst.posY == 0
+		if (src.posY == dst.posY && src.posY == row
 			&& src.posX == 4
 			&& dst.posX == 6
 			&& field[5][row] == undefined
@@ -274,7 +313,7 @@ var KingFigure = Class.create(PeerChessFigure, {
 			&& field[7][row] instanceof RookFigure
 			&& field[7][row].getColor() == this.color
 		) return true;
-		if (src.posY == dst.posY == 0
+		if (src.posY == dst.posY && src.posY == row
 			&& src.posX == 4
 			&& dst.posX == 2
 			&& field[3][row] == undefined
