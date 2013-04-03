@@ -84,6 +84,15 @@ var PeerChessGame = Class.create({
 		return this.callbacks[callbackName].call(this, options);
 	},
 
+	fieldIsCoveredByColor: function(color, pos) {
+		for (var x = 0; x <= 7; x++) for (var y = 0; y <= 7; y++) {
+			if (this.field[x][y] === undefined) continue;
+			if (this.field[x][y].getColor() != color) continue;
+			if (this.field[x][y].validateMove({posX: x, posY: y}, pos, this.field)) return true;
+		}
+		return false;
+	},
+
 	figureAdd: function(color, type, position) {
 		this.field[position.posX][position.posY] = new type(color);
 		this.executeCallback('onFigureAdd', {figure: this.field[position.posX][position.posY], position: position});
@@ -220,16 +229,11 @@ var PeerChessGame = Class.create({
 	playerIsInChess: function(color) {
 		var kingPos = null;
 		// find the king position
-		for (var x = 0; x <= 7; x++) for (var y = 0; y <= 7; y++) if (this.field[x][y] instanceof KingFigure && this.field[x][y].getColor() == color) {
+		parentLoop: for (var x = 0; x <= 7; x++) for (var y = 0; y <= 7; y++) if (this.field[x][y] instanceof KingFigure && this.field[x][y].getColor() == color) {
 			kingPos = {posX: x, posY: y};
+			break parentLoop;
 		}
-		// check if enemy figure can hit the king
-		for (var x = 0; x <= 7; x++) for (var y = 0; y <= 7; y++) {
-			if (this.field[x][y] === undefined) continue;
-			if (this.field[x][y].getColor() == color) continue;
-			if (this.field[x][y].validateMove({posX: x, posY: y}, kingPos, this.field)) return true;
-		}
-		return false;
+		return this.fieldIsCoveredByColor((color == 'white'? 'black':'white'), kingPos);
 	},
 
 	sendChatMessage: function(text) {
