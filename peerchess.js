@@ -335,6 +335,29 @@ var BishopFigure = Class.create(PeerChessFigure, {
 	validateMove: function(src, dst, field) {
 		// is movement diagonal?
 		if(Math.abs(src.posY-dst.posY) == Math.abs(src.posX-dst.posX)) {
+			// Move in which direction?
+			if(dst.posY > src.posY) {
+				// Move North
+				if(dst.posX > src.posX) {
+					// Move East
+					for(x = src.posX + 1, y = src.posY + 1; x < dst.posX && y < dst.posY; x++, y++) if(field[x][y] !== undefined) return false;
+				}
+				else {
+					// Move West
+					for(x = src.posX - 1, y = src.posY + 1; x > dst.posX && y < dst.posY; x--, y++) if(field[x][y] !== undefined) return false;
+				}
+			}
+			else {
+				// Move South
+				if(dst.posX > src.posX) {
+					// Move East
+					for(x = src.posX - 1, y = src.posY - 1; x < dst.posX && y > dst.posY; x--, y--) if(field[x][y] !== undefined) return false;
+				}
+				else {
+					// Move West
+					for(x = src.posX + 1, y = src.posY - 1; x > dst.posX && y > dst.posY; x++, y--) if(field[x][y] !== undefined) return false;
+				}
+			}
 			return true;
 		}
 
