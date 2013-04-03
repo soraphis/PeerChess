@@ -45,7 +45,7 @@ var PeerChessGame = Class.create({
 		this.peer.on('connection', function(connection) {
 			connection.on('open', function() {
 				if (that.gameStatus == GAME_STATUS_INITIALIZED) {
-					// that.peer.disconnect(); // TODO waiting for implementation of this function
+					that.peer.disconnect();
 					that.gameStatus = GAME_STATUS_RUNNING;
 					that.connection = connection;
 					that.executeCallback('onConnected');
@@ -65,7 +65,7 @@ var PeerChessGame = Class.create({
 		var that = this;
 		connection.on('open', function() {
 			if (that.gameStatus == GAME_STATUS_INITIALIZED) {
-				// that.peer.disconnect(); // TODO waiting for implementation of this function
+				that.peer.disconnect();
 				that.gameStatus = GAME_STATUS_RUNNING;
 				that.connection = connection;
 				that.executeCallback('onConnected');
