@@ -138,6 +138,7 @@ var PeerChessGame = Class.create({
 
 	move: function(src, dst) {
 		if (src.posX == dst.posX && src.posY == dst.posY) return false;
+		if (src.posX < 0 || src.posX > 7 || src.posY < 0 || src.posY > 7 || dst.posX < 0 || dst.posX > 7 || dst.posY < 0 || dst.posY > 7) return false;
 		var figure = this.getFigureAt(src.posX, src.posY);
 		if (figure === undefined) return false;
 		var dstFigure = this.getFigureAt(dst.posX, dst.posY);
@@ -150,7 +151,7 @@ var PeerChessGame = Class.create({
 			if (dstFigure !== undefined) this.executeCallback('onFigureRemove', {position: dst});
 			this.executeCallback('onFigureMove', {src: src, dst: dst});
 			this.executeCallback('onNotice', {message: 'You moved your <strong>'+figure.getType()+'</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong>.'});
-			// here is the right place for en passant / rochade check
+			// here is the right place for en passant / castling check
 		}
 	},
 
@@ -259,8 +260,22 @@ var KingFigure = Class.create(PeerChessFigure, {
 		$super(color, 'king');
 	},
 
+	executeMove: function($super, src, dst, field) {
+		return $super(src, dst, field); // TODO castling
+	},
+
 	validateMove: function(src, dst, field) {
-		return false; // TODO implement
+		// default move
+		if (Math.abs(src.posX-dst.posX) <= 1 && Math.abs(src.posY-dst.posY) <= 1) return true;
+		if (this.color == 'white') {
+			if (src.posY == dst.posY == 0 && src.posX == 4 && dst.posX == 6 && field[0][5] == undefined && field[0][6] == undefined && field[0][7] instanceof RookFigure && field[0][7].getColor() == this.color) return true;
+			if (src.posY == dst.posY == 0 && src.posX == 4 && dst.posX == 2 && field[0][3] == undefined && field[0][2] == undefined && field[0][1] == undefined && field[0][0] instanceof RookFigure && field[0][0].getColor() == this.color) return true;
+		}
+		else {
+			if (src.posY == dst.posY == 7 && src.posX == 4 && dst.posX == 6 && field[7][5] == undefined && field[7][6] == undefined && field[7][7] instanceof RookFigure && field[7][7].getColor() == this.color) return true;
+			if (src.posY == dst.posY == 7 && src.posX == 4 && dst.posX == 2 && field[7][3] == undefined && field[7][2] == undefined && field[7][1] == undefined && field[7][0] instanceof RookFigure && field[7][0].getColor() == this.color) return true;
+		}
+		return false;
 	}
 });
 
@@ -270,7 +285,7 @@ var QueenFigure = Class.create(PeerChessFigure, {
 	},
 
 	validateMove: function(src, dst, field) {
-		return true; // TODO implement
+		return ((new RookFigure(this.color)).validateMove(src, dst, field) || (new BishopFigure(this.color)).validateMove(src, dst, field));
 	}
 });
 
