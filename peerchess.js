@@ -333,7 +333,12 @@ var BishopFigure = Class.create(PeerChessFigure, {
 	},
 
 	validateMove: function(src, dst, field) {
-		return true; // TODO implement
+		// is movement diagonal?
+		if(Math.abs(src.posY-dst.posY) == Math.abs(src.posX-dst.posX)) {
+			return true;
+		}
+
+		return false;
 	}
 });
 
