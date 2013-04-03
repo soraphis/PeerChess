@@ -534,7 +534,6 @@ document.observe("dom:loaded", function() {
 		onConnected: function() {
 			$('connection-dialog').hide();
 			$('game').show();
-			$('chat-write-message').focus();
 		},
 		onChatMessage: function(data) {
 			var template = new Element('p',{
