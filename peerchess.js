@@ -121,7 +121,7 @@ var PeerChessGame = Class.create({
 
 	historyAppend: function(moveCode) {
 		this.history.push(moveCode);
-		this.executeCallback('onHistoryAppend', {code: moveCode});
+		this.executeCallback('onHistoryAppend', {code: moveCode, history: this.history});
 	},
 
 	historyGetLastMove: function() {
@@ -592,7 +592,22 @@ document.observe("dom:loaded", function() {
 			});
 		},
 		onHistoryAppend: function(data) {
-			// TODO implement. for example create history window
+			if (data.history.length % 2 == 1) {
+				var rowElement = new Element('tr');
+				var indexElement = new Element('td');
+				indexElement.update(Math.ceil(data.history.length / 2)+'.');
+				rowElement.appendChild(indexElement);
+				var firstColElement = new Element('td');
+				firstColElement.update(data.code);
+				rowElement.appendChild(firstColElement);
+				var secondColElement = new Element('td');
+				rowElement.appendChild(secondColElement);
+				$('history-table').appendChild(rowElement);
+				new Effect.ScrollToBottom($('history-table-container'));
+			}
+			else {
+				$$('#history-table tr td').last().update(data.code);
+			}
 		},
 		onTurnChange: function(data) {
 			if (data.onTurn == 'white') {

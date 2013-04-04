@@ -1,5 +1,5 @@
 
-html, body {
+html, body, td {
 	font-family: Arial, sans-serif;
 	color: #333;
 	font-size: 12px;
@@ -113,8 +113,20 @@ html, body {
 	height: 400px;
 }
 
-#history-table {
+#history-table-container {
 	overflow-y: scroll;
+	height: 100%;
+}
+
+#history-table {
+	border-collapse: collapse;
+	border: 1px solid black;
+	width: 160px;
+	margin: 10px;
+}
+
+#history-table tr td {
+	border: 1px solid black;
 }
 
 #gameboard {
