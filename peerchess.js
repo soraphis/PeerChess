@@ -130,6 +130,7 @@ var PeerChessGame = Class.create({
 
 	initGameBoard: function(myColor) {
 		this.myColor = myColor;
+		this.executeCallback('onTurnChange', {onTurn: 'white'});
 		this.field = new Array(8);
 		for (i = 0; i <= 7; i++) this.field[i] = new Array(8);
 		this.figureAdd('white', RookFigure,   {posX: 0, posY: 0});
@@ -230,6 +231,7 @@ var PeerChessGame = Class.create({
 					this.executeCallback('onFigureMove', {src: {posX: 4, posY: row}, dst: {posX: 2, posY: row}});
 					this.executeCallback('onFigureMove', {src: {posX: 0, posY: row}, dst: {posX: 3, posY: row}});
 					this.executeCallback('onNotice', {message: 'Your opponent is castling!'});
+					this.switchTurn();
 				}
 				else if (dataContent == 'O-O' || dataContent == 'O-O+') {
 					// TODO check for remote foobar
@@ -237,6 +239,7 @@ var PeerChessGame = Class.create({
 					this.executeCallback('onFigureMove', {src: {posX: 4, posY: row}, dst: {posX: 6, posY: row}});
 					this.executeCallback('onFigureMove', {src: {posX: 7, posY: row}, dst: {posX: 5, posY: row}});
 					this.executeCallback('onNotice', {message: 'Your opponent is castling!'});
+					this.switchTurn();
 				}
 				else {
 					var src = posString2Index(dataContent.substr(0,2));
@@ -304,6 +307,7 @@ var PeerChessGame = Class.create({
 		else {
 			this.turn = 'white';
 		}
+		this.executeCallback('onTurnChange', {onTurn: this.turn})
 	}
 });
 
@@ -589,6 +593,22 @@ document.observe("dom:loaded", function() {
 		},
 		onHistoryAppend: function(data) {
 			// TODO implement. for example create history window
+		},
+		onTurnChange: function(data) {
+			if (data.onTurn == 'white') {
+				$('turn-info').removeClassName('black');
+				$('turn-info').addClassName('white');
+			}
+			else {
+				$('turn-info').removeClassName('white');
+				$('turn-info').addClassName('black');
+			}
+			if (data.onTurn == this.getMyColor()) {
+				$('turn-info').update(data.onTurn+' - that\'s your color!');
+			}
+			else {
+				$('turn-info').update(data.onTurn);
+			}
 		}
 	});
 

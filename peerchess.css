@@ -86,6 +86,37 @@ html, body {
 #game .figure[data-position-y="6"] { top: 12.5%;  }
 #game .figure[data-position-y="7"] { top:  0.0%;  }
 
+#game-info {
+	float: right;
+	width: 200px;
+}
+
+#turn-info {
+	border: 1px solid black;
+	padding: 10px;
+	font-weight: bold;
+	text-align: center;
+}
+
+#turn-info.white {
+	color: black;
+	background-color: white;
+}
+
+#turn-info.black {
+	color: white;
+	background-color: black;
+}
+
+#history-box {
+	border: 1px solid black;
+	height: 400px;
+}
+
+#history-table {
+	overflow-y: scroll;
+}
+
 #gameboard {
 	background-image: url('board.png');
 	background-size: 100% 100%;
