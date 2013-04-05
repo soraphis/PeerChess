@@ -228,6 +228,7 @@ var PeerChessGame = Class.create({
 				if (dataContent == 'O-O-O' || dataContent == 'O-O-O+') {
 					// TODO check for remote foobar
 					var row = (this.getEnemyColor() == 'white'?0:7);
+					this.field[4][row].executeMove({posX: 4, posY: row}, {posX: 2, posY: row}, this.field);
 					this.executeCallback('onFigureMove', {src: {posX: 4, posY: row}, dst: {posX: 2, posY: row}});
 					this.executeCallback('onFigureMove', {src: {posX: 0, posY: row}, dst: {posX: 3, posY: row}});
 					this.executeCallback('onNotice', {message: 'Your opponent is castling!'});
@@ -236,6 +237,7 @@ var PeerChessGame = Class.create({
 				else if (dataContent == 'O-O' || dataContent == 'O-O+') {
 					// TODO check for remote foobar
 					var row = (this.getEnemyColor() == 'white'?0:7);
+					this.field[4][row].executeMove({posX: 4, posY: row}, {posX: 6, posY: row}, this.field);
 					this.executeCallback('onFigureMove', {src: {posX: 4, posY: row}, dst: {posX: 6, posY: row}});
 					this.executeCallback('onFigureMove', {src: {posX: 7, posY: row}, dst: {posX: 5, posY: row}});
 					this.executeCallback('onNotice', {message: 'Your opponent is castling!'});
@@ -350,8 +352,10 @@ var KingFigure = Class.create(PeerChessFigure, {
 				return 'O-O-O';
 			}
 			else { // O-O
+				console.log(field[5][src.posY]);
 				$super(src, dst, field); // move king
 				$super({posX: 7, posY: src.posY}, {posX: 5, posY: src.posY}, field); // move rook
+				console.log(field[5][src.posY]);
 				return 'O-O';
 			}
 		}
