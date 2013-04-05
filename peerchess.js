@@ -188,7 +188,13 @@ var PeerChessGame = Class.create({
 		if (figure === undefined) return false;
 		var dstFigure = this.getFigureAt(dst.posX, dst.posY);
 		if (dstFigure !== undefined && dstFigure.getColor() == figure.getColor()) return false;
+		var fieldTestCopy = this.getFieldCopy();
 		if (this.isEnPassantMove(src, dst)) {
+			figure.executeMove(src, dst, fieldTestCopy);
+			if (this.playerIsInCheck(this.getMyColor(), fieldTestCopy)) {
+				this.executeCallback('onNotice', {message: 'You can\'t move into check!'});
+				return false;
+			}
 			this.switchTurn();
 			figure.executeMove(src, dst, this.field);
 			var code = posIndex2String(src)+'x'+posIndex2String(dst);
@@ -201,6 +207,11 @@ var PeerChessGame = Class.create({
 			this.historyAppend(code);
 		}
 		else if (figure.validateMove(src, dst, this.field)) {
+			figure.executeMove(src, dst, fieldTestCopy);
+			if (this.playerIsInCheck(this.getMyColor(), fieldTestCopy)) {
+				this.executeCallback('onNotice', {message: 'You can\'t move into check!'});
+				return false;
+			}
 			this.switchTurn();
 			var code = figure.executeMove(src, dst, this.field);
 			if (code == 'O-O-O') {
