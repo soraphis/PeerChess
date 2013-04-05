@@ -5,6 +5,10 @@ html, body, td {
 	font-size: 12px;
 }
 
+body {
+	padding: 10px;
+}
+
 #game {
 
 }
@@ -170,4 +174,9 @@ html, body, td {
 
 #chat #chat-write-message {
 	width: 100%;
+}
+
+#footer {
+	text-align: center;
+	margin: 25px 5px 5px 5px;
 }
