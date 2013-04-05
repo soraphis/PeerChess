@@ -363,10 +363,8 @@ var KingFigure = Class.create(PeerChessFigure, {
 				return 'O-O-O';
 			}
 			else { // O-O
-				console.log(field[5][src.posY]);
 				$super(src, dst, field); // move king
 				$super({posX: 7, posY: src.posY}, {posX: 5, posY: src.posY}, field); // move rook
-				console.log(field[5][src.posY]);
 				return 'O-O';
 			}
 		}
@@ -553,7 +551,6 @@ document.observe("dom:loaded", function() {
 		onConnected: function() {
 			$('connection-dialog').hide();
 			$('game').show();
-			console.log(this.getMyColor());
 			if (this.getMyColor() == 'black') {
 				$('gameboard').addClassName('rotate180');
 				var blackFigures = $$('#gameboard .figure');
