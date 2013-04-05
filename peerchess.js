@@ -84,11 +84,11 @@ var PeerChessGame = Class.create({
 		return this.callbacks[callbackName].call(this, options);
 	},
 
-	fieldIsCoveredByColor: function(color, pos) {
+	fieldIsCoveredByColor: function(color, pos, field) {
 		for (var x = 0; x <= 7; x++) for (var y = 0; y <= 7; y++) {
-			if (this.field[x][y] === undefined) continue;
-			if (this.field[x][y].getColor() != color) continue;
-			if (this.field[x][y].validateMove({posX: x, posY: y}, pos, this.field)) return true;
+			if (field[x][y] === undefined) continue;
+			if (field[x][y].getColor() != color) continue;
+			if (field[x][y].validateMove({posX: x, posY: y}, pos, field)) return true;
 		}
 		return false;
 	},
@@ -105,6 +105,17 @@ var PeerChessGame = Class.create({
 
 	getFigureAt: function(x, y) {
 		return this.field[x][y];
+	},
+
+	getFieldCopy: function() {
+		var copy = new Array(8);
+		for (var x = 0; x <= 7; x++) {
+			copy[x] = new Array(8);
+			for (var y = 0; y <= 7; y++) {
+				copy[x][y] = this.field[x][y];
+			}
+		}
+		return copy;
 	},
 
 	getGameStatus: function() {
@@ -185,7 +196,7 @@ var PeerChessGame = Class.create({
 			this.executeCallback('onFigureRemove', {position: {posX: dst.posX, posY: src.posY }});
 			this.executeCallback('onFigureMove', {src: src, dst: dst});
 			this.executeCallback('onNotice', {message: 'You moved your <strong>pawn</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong> and killed your enemy en passant.'});
-			if (this.playerIsInChess(this.getEnemyColor())) code += '+';
+			if (this.playerIsInCheck(this.getEnemyColor(), this.field)) code += '+';
 			this.sendMove(code);
 			this.historyAppend(code);
 		}
@@ -207,7 +218,7 @@ var PeerChessGame = Class.create({
 				this.executeCallback('onFigureMove', {src: src, dst: dst});
 				this.executeCallback('onNotice', {message: 'You moved your <strong>'+figure.getType()+'</strong> from <strong>'+posIndex2String(src)+'</strong> to <strong>'+posIndex2String(dst)+'</strong>.'});
 			}
-			if (this.playerIsInChess(this.getEnemyColor())) code += '+';
+			if (this.playerIsInCheck(this.getEnemyColor(), this.field)) code += '+';
 			this.sendMove(code);
 			this.historyAppend(code);
 		}
@@ -280,14 +291,14 @@ var PeerChessGame = Class.create({
 		}
 	},
 
-	playerIsInChess: function(color) {
+	playerIsInCheck: function(color, field) {
 		var kingPos = null;
 		// find the king position
-		parentLoop: for (var x = 0; x <= 7; x++) for (var y = 0; y <= 7; y++) if (this.field[x][y] instanceof KingFigure && this.field[x][y].getColor() == color) {
+		parentLoop: for (var x = 0; x <= 7; x++) for (var y = 0; y <= 7; y++) if (field[x][y] instanceof KingFigure && field[x][y].getColor() == color) {
 			kingPos = {posX: x, posY: y};
 			break parentLoop;
 		}
-		return this.fieldIsCoveredByColor((color == 'white'? 'black':'white'), kingPos);
+		return this.fieldIsCoveredByColor((color == 'white'? 'black':'white'), kingPos, field);
 	},
 
 	sendChatMessage: function(text) {
