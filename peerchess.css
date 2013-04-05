@@ -5,8 +5,12 @@ html, body, td {
 	font-size: 12px;
 }
 
-#game {
+#connection-dialog {
+	margin: 5px;
+}
 
+#game {
+	margin: 5px;
 }
 
 #game .figure {
@@ -142,8 +146,17 @@ html, body, td {
 	left: 10%;
 }
 
+#lost-figures {
+	margin: 5px;
+}
+
+.lost-figures-frame {
+	border: 1px solid black;
+}
+
 #chat {
 	border: 1px solid #333;
+	margin: 5px;
 }
 
 #chat #messages {
