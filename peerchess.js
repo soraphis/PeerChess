@@ -48,8 +48,8 @@ var PeerChessGame = Class.create({
 					that.peer.disconnect();
 					that.gameStatus = GAME_STATUS_RUNNING;
 					that.connection = connection;
-					that.executeCallback('onConnected');
 					that.initGameBoard('black');
+					that.executeCallback('onConnected');
 					that.executeCallback('onNotice', {message: 'You challenged the other player, so you\'re playing with <strong>black</strong>!'});
 					that.connection.on('data', function(data) {
 						that.parseIncomingData(data);
@@ -68,8 +68,8 @@ var PeerChessGame = Class.create({
 				that.peer.disconnect();
 				that.gameStatus = GAME_STATUS_RUNNING;
 				that.connection = connection;
-				that.executeCallback('onConnected');
 				that.initGameBoard('white');
+				that.executeCallback('onConnected');
 				that.executeCallback('onNotice', {message: 'You has been challenged, so you\'re playing with <strong>white</strong>!'});
 				that.executeCallback('onNotice', {message: 'Come on, make your first move!'});
 				that.connection.on('data', function(data) {
@@ -553,6 +553,14 @@ document.observe("dom:loaded", function() {
 		onConnected: function() {
 			$('connection-dialog').hide();
 			$('game').show();
+			console.log(this.getMyColor());
+			if (this.getMyColor() == 'black') {
+				$('gameboard').addClassName('rotate180');
+				var blackFigures = $$('#gameboard .figure');
+				for (var i = 0; i < blackFigures.length; i++) {
+					blackFigures[i].addClassName('rotate180');
+				}
+			}
 		},
 		onChatMessage: function(data) {
 			var template = new Element('p',{
@@ -688,8 +696,15 @@ document.observe("dom:loaded", function() {
 		// calculate relative click position
 		var relativeX = event.pageX - this.fullPositionedOffset()[0];
 		var relativeY = event.pageY - this.fullPositionedOffset()[1];
+		// calculate fields
 		var fieldX = Math.floor(8*relativeX/this.getWidth());
 		var fieldY = 7-Math.floor(8*relativeY/this.getHeight());
+		// if board is inversed, inverse click position
+		if (game.getMyColor() == 'black') {
+			fieldX = 7-fieldX;
+			fieldY = 7-fieldY;
+		}
+		// select figure
 		var figure = game.getFigureAt(fieldX, fieldY);
 		// select? move?
 		if (figure !== undefined && figure.getColor() == game.getMyColor()) {
