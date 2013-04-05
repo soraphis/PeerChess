@@ -585,7 +585,7 @@ document.observe("dom:loaded", function() {
 				'data-type': data.figure.getType(),
 				'data-position-x': data.position.posX,
 				'data-position-y': data.position.posY,
-				'style': 'position: absolute; display: none; z-index: 0;',
+				'style': 'display: none; z-index: 0;',
 				title: data.figure.getColor()+' '+data.figure.getType()
 			});
 			// show figure
@@ -607,9 +607,20 @@ document.observe("dom:loaded", function() {
 		},
 		onFigureRemove: function(data) {
 			var figure = $$('#fields .figure[data-position-x="'+data.position.posX+'"][data-position-y="'+data.position.posY+'"]').first();
-			Effect.Fade(figure, {
+			var lostFigure = figure.clone();
+			lostFigure.removeClassName('rotate180');
+			lostFigure.setStyle({top: null, left: null});
+			lostFigure.hide();
+			new Effect.Fade(figure, {
 				afterFinish: function() { figure.remove(); }
 			});
+			if (lostFigure.readAttribute('data-color') == 'white') {
+				$('lost-figures-white').appendChild(lostFigure);
+			}
+			else {
+				$('lost-figures-black').appendChild(lostFigure);
+			}
+			new Effect.Appear(lostFigure);
 		},
 		onHistoryAppend: function(data) {
 			if (data.history.length % 2 == 1) {
