@@ -733,5 +733,6 @@ document.observe("dom:loaded", function() {
 			game.move(getSelectedPosition(), {posX: fieldX, posY: fieldY});
 			resetFigureSelection();
 		}
+		$('chat-write-message').focusWithoudScroll();
 	});
 });

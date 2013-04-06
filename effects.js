@@ -56,3 +56,13 @@ Effect.ScrollToBottom = Class.create(Effect.Base, {
 		this.element.scrollTop = this.scrollTopOld*(1.0-position)+this.scrollHeight*position;
 	}
 });
+
+/**
+ * @author Matthias Lohr <matthias@lohr.me>
+ */
+Element.prototype.focusWithoudScroll = function() {
+	var x = window.scrollX;
+	var y = window.scrollY;
+	this.focus();
+	window.scrollTo(x, y);
+}
