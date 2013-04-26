@@ -141,6 +141,8 @@ body {
 }
 
 #gameboard {
+	width: 400px;
+	height: 400px;
 	background-image: url('board.svg');
 	background-size: 100% 100%;
 }
